@@ -1,7 +1,7 @@
 name: Lint, Test, and Deploy Project
 on: [push, workflow_dispatch]
 jobs:
-  setup:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - name: Get code
@@ -13,30 +13,38 @@ jobs:
       - name: Install dependencies
         working-directory: frontend
         run: npm ci
-  lint:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Use setup job
-        uses: ./.github/workflows/deployment.yml#setup
       - name: Run Lint
         working-directory: frontend
         run: npm run lint
   test:
-    needs: [setup, lint]
+    needs: lint
     runs-on: ubuntu-latest
     steps:
-      - name: Use setup job
-        uses: ./.github/workflows/deployment.yml#setup
+      - name: Get code
+        uses: actions/checkout@v3
+      - name: Install NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
       - name: Run tests
         working-directory: frontend
         run: npm test
   deploy:
-    needs: [setup, test]
+    needs: test
     runs-on: ubuntu-latest
     steps:
-      - name: Use setup job
-        uses: ./.github/workflows/deployment.yml#setup
+      - name: Get code
+        uses: actions/checkout@v3
+      - name: Install NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
       - name: Build project
         working-directory: frontend
         run: npm run build
